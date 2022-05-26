@@ -1,25 +1,25 @@
-# Webpack 5 boilerplate
+# Bad Chess
 
-![](https://habrastorage.org/webt/q-/lv/b0/q-lvb0d4li7cpi-hsctistlzooi.png)
+This will (soon) be a simple site where you can play chess against a selection of weak engines.
 
-[Webpack 5](https://webpack.js.org/) boilerplate with support of most common loaders and modules:
+# Planned Opponents
 
--   [babel](https://babeljs.io/)
--   typescript (using [ForkTsCheckerWebpack](https://www.npmjs.com/package/fork-ts-checker-webpack-plugin) )
--   sass, less, [css modules](https://github.com/css-modules/css-modules) with automatic typescript declaration
--   with react support (also with [react-refresh](https://www.npmjs.com/package/@pmmmwh/react-refresh-webpack-plugin))
--   [esLint](https://www.npmjs.com/package/eslint)
--   [prettier](https://www.npmjs.com/package/prettier) (with import sorting using [prettier-plugin-import-sort](https://www.npmjs.com/package/prettier-plugin-import-sort), [import-sort-style-module-and-prefix](https://www.npmjs.com/package/import-sort-style-module-and-prefix))
--   [webpack dev server](https://webpack.js.org/configuration/dev-server/) ([proxy](https://webpack.js.org/configuration/dev-server/#devserverproxy) support is also available)
--   importing svg as react components using [@svgr/webpack](https://www.npmjs.com/package/@svgr/webpack)
--   postcss loader (with [autoprefixer](https://www.npmjs.com/package/autoprefixer) and [cssnano](https://www.npmjs.com/package/cssnano))
--   [husky](https://www.npmjs.com/package/husky) prehooks and [lint-staged](https://www.npmjs.com/package/lint-staged)
+## Arbitrary Random Move (ARM)
 
-## Quick start
+The digital equivalent of a child closing their eyes and (legally) randomly moving a piece
 
-To run this locally:
+## Bongcloud Kingmarch
 
-1. run `git clone https://github.com/glook/webpack-typescript-react.git sample-project`
-2. Install all dependencies using `yarn` or `npm install`
-3. Start the development server using `yarn start` or `npm run start`
-4. Open up [http://localhost:8080](http://localhost:8080)
+Starts with the bongcloud, the quintessential bad chess opening, then the king leads from where all good leaders should: the front.
+
+## Hyper Agressive
+
+ARM's angry older brother. Plays random moves until it can take something, then does that at every available opportunity.
+
+## Terrible CNN
+
+A Convolutional Neural Network that has neither enough parameters or training time to have a hope of playing well.
+
+## Sandbag
+
+A much stronger neural network that has been trained extensively...to mimic the moves of weak players using Lichess' game database.
