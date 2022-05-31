@@ -2,11 +2,30 @@ import p5Type from 'p5';
 import React, {useState} from 'react';
 import Sketch from 'react-p5';
 
+import {getAvailableSqs} from '../../chess';
+
 const DARK_COLOR = 0;
 const LIGHT_COLOR = 196;
 const BOARD_SIZE = 75;
 const CANVAS_SIZE = 600;
-const FEN = 'rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2';
+const AVAILABLE_SQ: [number, number, number, number] = [200, 0, 200, 200];
+const FEN = 'rnbqkbnr/pp1ppppp/8/8/1rp1P2R/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2';
+const FEN2Arr = (board: string): string[][] => {
+    const out: string[][] = [];
+    board.split('/').forEach((row) => {
+        const rowArr: string[] = [];
+        row.split('').forEach((piece) => {
+            const spacing = parseInt(piece);
+            if (isNaN(spacing)) {
+                rowArr.push(piece);
+            } else {
+                rowArr.push(...Array(spacing).fill('_'));
+            }
+        });
+        out.push(rowArr);
+    });
+    return out;
+};
 const renderPiece = (p5: p5Type, piece: string, row: number, col: number) => {
     const color: [number, number, number] =
         piece == piece.toUpperCase() ? [0, 102, 153] : [50, 50, 50];
@@ -31,7 +50,7 @@ const Chessboard = () => {
     };
     const [pieces, toMove, castling, enPassant, halfmove, fullmove] =
         FEN.split(' ');
-    const boardRows = pieces.split('/');
+    const boardArr = FEN2Arr(pieces);
     const draw = (p5: p5Type) => {
         p5.background(DARK_COLOR);
         p5.fill(LIGHT_COLOR);
@@ -47,16 +66,25 @@ const Chessboard = () => {
                 );
             }
         }
-        boardRows.forEach((row, i) => {
-            const cols = row.split('');
-            let cur_col = 0;
-            cols.forEach((piece, j) => {
-                const spacing = parseInt(piece);
-                if (!isNaN(spacing)) {
-                    cur_col += spacing;
-                } else {
-                    renderPiece(p5, piece, i, cur_col);
-                    cur_col += 1;
+        if (!(selectedX === null) && !(selectedY === null)) {
+            // Fixme: This should happen once on click not every frame
+            const availableSqs = getAvailableSqs(
+                boardArr,
+                selectedX,
+                selectedY,
+            );
+            availableSqs.forEach((sq) => {
+                const [x, y] = sq;
+                p5.stroke(...AVAILABLE_SQ);
+                p5.noFill();
+                p5.rect(x * BOARD_SIZE, y * BOARD_SIZE, BOARD_SIZE, BOARD_SIZE);
+                p5.noStroke();
+            });
+        }
+        boardArr.forEach((row, i) => {
+            row.forEach((piece, j) => {
+                if (piece !== '_') {
+                    renderPiece(p5, piece, i, j);
                 }
             });
         });
@@ -73,12 +101,12 @@ const Chessboard = () => {
         }
     };
     const mouseClicked = (e: p5Type) => {
-        console.log(
-            Math.floor(e.mouseX / BOARD_SIZE),
-            Math.floor(e.mouseY / BOARD_SIZE),
-        );
-        setSelectedX(Math.floor(e.mouseX / BOARD_SIZE));
-        setSelectedY(Math.floor(e.mouseY / BOARD_SIZE));
+        const x = Math.floor(e.mouseX / BOARD_SIZE);
+        const y = Math.floor(e.mouseY / BOARD_SIZE);
+        console.log(x, y);
+        console.log(boardArr[y][x]);
+        setSelectedX(x);
+        setSelectedY(y);
     };
     return <Sketch setup={setup} draw={draw} mouseClicked={mouseClicked} />;
 };
