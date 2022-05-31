@@ -6,10 +6,10 @@ const DARK_COLOR = 0;
 const LIGHT_COLOR = 196;
 const BOARD_SIZE = 75;
 const CANVAS_SIZE = 600;
-const FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+const FEN = 'rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2';
 const renderPiece = (p5: p5Type, piece: string, row: number, col: number) => {
     const color: [number, number, number] =
-        piece == piece.toLowerCase() ? [0, 102, 153] : [50, 50, 50];
+        piece == piece.toUpperCase() ? [0, 102, 153] : [50, 50, 50];
     p5.fill(...color);
     p5.rectMode(p5.CORNERS);
     // p5.textAlign(p5.CENTER, p5.CENTER);
@@ -55,7 +55,7 @@ const Chessboard = () => {
                 if (!isNaN(spacing)) {
                     cur_col += spacing;
                 } else {
-                    renderPiece(p5, piece, 7 - i, cur_col);
+                    renderPiece(p5, piece, i, cur_col);
                     cur_col += 1;
                 }
             });
