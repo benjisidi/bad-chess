@@ -4,6 +4,7 @@
 
 import cn from 'classnames';
 import React, {Suspense, lazy} from 'react';
+import {RecoilRoot} from 'recoil';
 
 import packageJson from '../../../package.json';
 import {stylesContainer} from './app.module.less';
@@ -12,9 +13,10 @@ import Chessboard from './p5-canvas';
 
 const LazyStrawberryIcon = lazy(() => import('./strawberry'));
 export const App = (): React.ReactElement => (
-    <div className={stylesContainer}>
-        <div className={stylesHeader}>It works</div>
-        {/* <Suspense fallback={'loading...'}>
+    <RecoilRoot>
+        <div className={stylesContainer}>
+            <div className={stylesHeader}>Bad Chess</div>
+            {/* <Suspense fallback={'loading...'}>
             <LazyStrawberryIcon className={stylesImage} />
         </Suspense>
         <div>
@@ -26,6 +28,7 @@ export const App = (): React.ReactElement => (
                 @glook/webpack-typescript-react ({packageJson.version})
             </a>
         </div> */}
-        <Chessboard />
-    </div>
+            <Chessboard />
+        </div>
+    </RecoilRoot>
 );

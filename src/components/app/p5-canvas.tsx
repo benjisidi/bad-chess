@@ -1,15 +1,20 @@
 import p5Type from 'p5';
 import React, {useState} from 'react';
 import Sketch from 'react-p5';
+import {useRecoilState} from 'recoil';
 
-import {getAvailableSqs} from '../../chess';
+import {getAvailableSqs, movePiece} from '../../chess';
+import {useChessState} from '../atoms/chessState';
 
 const DARK_COLOR = 0;
 const LIGHT_COLOR = 196;
 const BOARD_SIZE = 75;
 const CANVAS_SIZE = 600;
-const AVAILABLE_SQ: [number, number, number, number] = [200, 0, 200, 200];
-const FEN = 'rnbqkbnr/pp1ppppp/8/8/1rp1P2R/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2';
+const AVAILABLE_SQ: [number, number, number, number] = [0, 200, 200, 200];
+const FEN = 'rnbqkbnr/pp1ppppp/8/8/1rpPP2R/P4N2/PPP2PPP/RNBQKB1R b KQkq d3 1 2';
+
+const colMap: Map<string, number> = new Map();
+'abcdefgh'.split('').forEach((char, i) => colMap.set(char, i));
 const FEN2Arr = (board: string): string[][] => {
     const out: string[][] = [];
     board.split('/').forEach((row) => {
@@ -42,15 +47,42 @@ const renderPiece = (p5: p5Type, piece: string, row: number, col: number) => {
     );
     p5.rectMode(p5.CORNER);
 };
+
+const parseFEN = (FEN: string): ChessState => {
+    const [pieces, toMove, castling, enPassant, halfMoves, fullMoves] =
+        FEN.split(' ');
+    const enPassantParsed =
+        enPassant === '-'
+            ? null
+            : [
+                  colMap.get(enPassant[0]) as number,
+                  7 - (parseInt(enPassant[1]) - 1),
+              ];
+    const boardArr = FEN2Arr(pieces);
+    const castlingParsed = {
+        k: castling.includes('k'),
+        K: castling.includes('K'),
+        q: castling.includes('q'),
+        Q: castling.includes('Q'),
+    };
+    return {
+        boardArray: boardArr,
+        castling: castlingParsed,
+        enPassant: enPassantParsed,
+        selectedX: null,
+        selectedY: null,
+        halfMoveCounter: parseInt(halfMoves),
+        moveCounter: parseInt(fullMoves),
+    };
+};
+
 const Chessboard = () => {
-    const [selectedX, setSelectedX] = useState<null | number>(null);
-    const [selectedY, setSelectedY] = useState<null | number>(null);
+    const [chessState, setChessState] = useChessState();
+    const [availableSqs, setAvailableSqs] = useState<number[][]>([]);
     const setup = (p5: p5Type, parentCanvasRef: Element) => {
         p5.createCanvas(CANVAS_SIZE, CANVAS_SIZE).parent(parentCanvasRef);
+        setChessState(parseFEN(FEN));
     };
-    const [pieces, toMove, castling, enPassant, halfmove, fullmove] =
-        FEN.split(' ');
-    const boardArr = FEN2Arr(pieces);
     const draw = (p5: p5Type) => {
         p5.background(DARK_COLOR);
         p5.fill(LIGHT_COLOR);
@@ -66,13 +98,10 @@ const Chessboard = () => {
                 );
             }
         }
-        if (!(selectedX === null) && !(selectedY === null)) {
-            // Fixme: This should happen once on click not every frame
-            const availableSqs = getAvailableSqs(
-                boardArr,
-                selectedX,
-                selectedY,
-            );
+        if (
+            !(chessState.selectedX === null) &&
+            !(chessState.selectedY === null)
+        ) {
             availableSqs.forEach((sq) => {
                 const [x, y] = sq;
                 p5.stroke(...AVAILABLE_SQ);
@@ -81,20 +110,20 @@ const Chessboard = () => {
                 p5.noStroke();
             });
         }
-        boardArr.forEach((row, i) => {
-            row.forEach((piece, j) => {
+        chessState.boardArray.forEach((row, i) => {
+            row.forEach((piece: string, j) => {
                 if (piece !== '_') {
                     renderPiece(p5, piece, i, j);
                 }
             });
         });
-        if (selectedX !== null && selectedY !== null) {
+        if (chessState.selectedX !== null && chessState.selectedY !== null) {
             p5.noFill();
             p5.strokeWeight(4);
             p5.stroke(256);
             p5.rect(
-                selectedX * BOARD_SIZE,
-                selectedY * BOARD_SIZE,
+                chessState.selectedX * BOARD_SIZE,
+                chessState.selectedY * BOARD_SIZE,
                 BOARD_SIZE,
                 BOARD_SIZE,
             );
@@ -103,10 +132,39 @@ const Chessboard = () => {
     const mouseClicked = (e: p5Type) => {
         const x = Math.floor(e.mouseX / BOARD_SIZE);
         const y = Math.floor(e.mouseY / BOARD_SIZE);
-        console.log(x, y);
-        console.log(boardArr[y][x]);
-        setSelectedX(x);
-        setSelectedY(y);
+        if (chessState.selectedX === null || chessState.selectedY === null) {
+            if (chessState.boardArray[y][x] !== '_') {
+                setChessState({selectedX: x, selectedY: y});
+                setAvailableSqs(
+                    getAvailableSqs(
+                        chessState.boardArray,
+                        x,
+                        y,
+                        chessState.enPassant,
+                    ),
+                );
+            } else {
+                setChessState({selectedX: null, selectedY: null});
+            }
+        } else {
+            const availableSqIndex = availableSqs.map(([x, y]) => 8 * y + x);
+            const clickedSqIndex = 8 * y + x;
+            if (availableSqIndex.includes(clickedSqIndex)) {
+                setChessState({
+                    boardArray: movePiece(
+                        chessState.boardArray,
+                        chessState.selectedX,
+                        chessState.selectedY,
+                        x,
+                        y,
+                    ),
+                    selectedX: null,
+                    selectedY: null,
+                });
+            } else {
+                setChessState({selectedX: null, selectedY: null});
+            }
+        }
     };
     return <Sketch setup={setup} draw={draw} mouseClicked={mouseClicked} />;
 };
