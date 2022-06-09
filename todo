@@ -3,7 +3,7 @@ Fuctional Game:
     ✔ Check @done(22-06-09 17:53)
     ☐ Checkmate
     ☐ Queening
-    ☐ Piece icons
+    ✔ Piece icons @done(22-06-09 19:27)
     ☐ Random agent as black
     ☐ Random agent as white
 
@@ -18,3 +18,6 @@ More Agents:
     ☐ Hyper agressive
     ☐ Bongcloud Kingmarch
     ☐ CNN POC
+
+Misc:
+    ☐ Chess Icon Attribution <a href="https://www.vecteezy.com/free-vector/chess-icons">Chess Icons Vectors by Vecteezy</a>
