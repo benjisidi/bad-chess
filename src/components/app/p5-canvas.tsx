@@ -1,9 +1,10 @@
 import p5Type from 'p5';
 import React, {useState} from 'react';
 import Sketch from 'react-p5';
-import {useRecoilState} from 'recoil';
 
-import {getAvailableSqs, movePiece} from '../../chess';
+import {isLowerCase, isUpperCase} from '@src/util';
+
+import {getAvailableSqs, isInCheck, movePiece} from '../../chess';
 import {useChessState} from '../atoms/chessState';
 
 const DARK_COLOR = 0;
@@ -79,6 +80,7 @@ const parseFEN = (FEN: string): ChessState => {
 const Chessboard = () => {
     const [chessState, setChessState] = useChessState();
     const [availableSqs, setAvailableSqs] = useState<number[][]>([]);
+    const [checkHighlight, setCheckHighlight] = useState<number[]>([]);
     const setup = (p5: p5Type, parentCanvasRef: Element) => {
         p5.createCanvas(CANVAS_SIZE, CANVAS_SIZE).parent(parentCanvasRef);
         setChessState(parseFEN(FEN));
@@ -128,12 +130,31 @@ const Chessboard = () => {
                 BOARD_SIZE,
             );
         }
+        if (checkHighlight.length > 0) {
+            p5.noFill();
+            p5.strokeWeight(4);
+            p5.stroke(128, 0, 0);
+            p5.rect(
+                checkHighlight[0] * BOARD_SIZE,
+                checkHighlight[1] * BOARD_SIZE,
+                BOARD_SIZE,
+                BOARD_SIZE,
+            );
+        }
     };
     const mouseClicked = (e: p5Type) => {
         const x = Math.floor(e.mouseX / BOARD_SIZE);
         const y = Math.floor(e.mouseY / BOARD_SIZE);
+        console.log(chessState);
+        console.log(isInCheck(chessState.boardArray, isUpperCase, isLowerCase));
         if (chessState.selectedX === null || chessState.selectedY === null) {
-            if (chessState.boardArray[y][x] !== '_') {
+            const whiteToMove = chessState.moveCounter % 2 == 0;
+            const selectedSq = chessState.boardArray[y][x];
+            if (
+                selectedSq !== '_' &&
+                ((whiteToMove && isUpperCase(selectedSq)) ||
+                    (!whiteToMove && isLowerCase(selectedSq)))
+            ) {
                 setChessState({selectedX: x, selectedY: y});
                 setAvailableSqs(
                     getAvailableSqs(
@@ -150,17 +171,36 @@ const Chessboard = () => {
             const availableSqIndex = availableSqs.map(([x, y]) => 8 * y + x);
             const clickedSqIndex = 8 * y + x;
             if (availableSqIndex.includes(clickedSqIndex)) {
+                const newBoard = movePiece(
+                    chessState.boardArray,
+                    chessState.selectedX,
+                    chessState.selectedY,
+                    x,
+                    y,
+                );
                 setChessState({
-                    boardArray: movePiece(
-                        chessState.boardArray,
-                        chessState.selectedX,
-                        chessState.selectedY,
-                        x,
-                        y,
-                    ),
+                    boardArray: newBoard,
                     selectedX: null,
                     selectedY: null,
+                    moveCounter: chessState.moveCounter + 1,
                 });
+                const [whiteInCheck, whiteKing] = isInCheck(
+                    newBoard,
+                    isLowerCase,
+                    isUpperCase,
+                );
+                const [blackInCheck, blackKing] = isInCheck(
+                    newBoard,
+                    isUpperCase,
+                    isLowerCase,
+                );
+                if (whiteInCheck) {
+                    setCheckHighlight(whiteKing as number[]);
+                } else if (blackInCheck) {
+                    setCheckHighlight(blackKing as number[]);
+                } else {
+                    setCheckHighlight([]);
+                }
             } else {
                 setChessState({selectedX: null, selectedY: null});
             }

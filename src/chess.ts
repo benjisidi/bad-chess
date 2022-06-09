@@ -15,6 +15,10 @@
       - beam search basic moves until blocked
 */
 
+import {flatten} from 'lodash';
+
+import {board2flat, flat2board, isLowerCase, isUpperCase} from './util';
+
 const movePiece = (
     boardArr: string[][],
     x: number,
@@ -36,9 +40,10 @@ const beamSearch = (
     vectors: number[][],
     l: number,
     board: string[][],
-    colorFn: (p: string) => boolean,
+    friendlySelector: (p: string) => boolean,
     canTake = true,
     takeOnly = false,
+    search: string[] = [],
 ): number[][] => {
     const out: number[][] = [];
     vectors.forEach((vec) => {
@@ -55,12 +60,20 @@ const beamSearch = (
             curX >= 0 &&
             curY >= 0
         ) {
+            // ToDo: Refactor this to branch on curPiece === "_", will be neater
             const curPiece = board[curY][curX];
-            if (curPiece === '_' && !takeOnly) {
+            // Empty square, can continue
+            if (curPiece === '_' && !takeOnly && search.length == 0) {
                 out.push([curX, curY]);
-            } else if (colorFn(curPiece)) {
+                // Friendly piece, are blocked
+            } else if (friendlySelector(curPiece)) {
                 blocked = true;
-            } else {
+                // "Reverse" search while checking for check
+            } else if (search.length > 0 && search.includes(curPiece)) {
+                out.push([curX, curY]);
+                blocked = true;
+                // Enemy piece, can take/are blocked
+            } else if (curPiece !== '_') {
                 canTake && out.push([curX, curY]);
                 blocked = true;
             }
@@ -71,9 +84,6 @@ const beamSearch = (
     });
     return out;
 };
-
-const isUpperCase = (x: string) => x === x.toUpperCase();
-const isLowerCase = (x: string) => x === x.toLowerCase();
 
 const getAvailableSqs = (
     boardArr: string[][],
@@ -251,4 +261,104 @@ const getAvailableSqs = (
     return output;
 };
 
-export {getAvailableSqs, movePiece};
+const isInCheck = (
+    boardArr: string[][],
+    friendlySelector: (piece: string) => boolean,
+    enemySelector: (piece: string) => boolean,
+): [true, number[]] | [false, null] => {
+    const boardArrFlat = flatten(boardArr);
+    const kingLocFlat = boardArrFlat.findIndex(
+        (x) => x.toLowerCase() === 'k' && friendlySelector(x),
+    );
+    const [kingX, kingY] = flat2board(kingLocFlat);
+    const friendlyPieceSelector = (x: string) =>
+        x !== '_' && friendlySelector(x);
+    // Check all sqs a knight's move away from king for enemy knights
+    const attackingKnights = beamSearch(
+        kingX,
+        kingY,
+        [
+            [1, 2],
+            [-1, 2],
+            [1, -2],
+            [-1, -2],
+            [2, 1],
+            [2, -1],
+            [-2, 1],
+            [-2, -1],
+        ],
+        1,
+        boardArr,
+        friendlyPieceSelector,
+        false,
+        false,
+        [enemySelector('n') ? 'n' : 'N'],
+    );
+    // Check all sqs diagonal moves away from king for pawns, bishops and queens
+    const attackingBishops = beamSearch(
+        kingX,
+        kingY,
+        [
+            [1, 1],
+            [-1, -1],
+            [1, -1],
+            [-1, 1],
+        ],
+        8,
+        boardArr,
+        friendlyPieceSelector,
+        false,
+        false,
+        enemySelector('b') ? ['b', 'q'] : ['B', 'Q'],
+    );
+    // Check all sqs straight moves away from king for rooks and queens
+    const attackingRooks = beamSearch(
+        kingX,
+        kingY,
+        [
+            [0, 1],
+            [1, 0],
+            [-1, 0],
+            [0, -1],
+        ],
+        8,
+        boardArr,
+        friendlyPieceSelector,
+        false,
+        false,
+        enemySelector('r') ? ['r', 'q'] : ['R', 'Q'],
+    );
+    const attackingPawnDirections = enemySelector('p')
+        ? [
+              [1, 1],
+              [-1, 1],
+          ]
+        : [
+              [1, -1],
+              [-1, -1],
+          ];
+    const attackingPawns = beamSearch(
+        kingX,
+        kingY,
+        attackingPawnDirections,
+        1,
+        boardArr,
+        friendlyPieceSelector,
+        false,
+        false,
+        enemySelector('p') ? ['p'] : ['P'],
+    );
+    if (
+        attackingKnights.length +
+            attackingBishops.length +
+            attackingPawns.length +
+            attackingRooks.length >
+        0
+    ) {
+        return [true, [kingX, kingY]];
+    } else {
+        return [false, null];
+    }
+};
+
+export {getAvailableSqs, movePiece, isInCheck};

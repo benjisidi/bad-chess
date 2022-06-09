@@ -1,0 +1,20 @@
+Fuctional Game:
+    ☐ En Passant update
+    ✔ Check @done(22-06-09 17:53)
+    ☐ Checkmate
+    ☐ Queening
+    ☐ Piece icons
+    ☐ Random agent as black
+    ☐ Random agent as white
+
+Replay/Save/Load:
+    ☐ State2FEN function
+    ☐ Store state changes
+    ☐ Serialisable/Parsable game history
+    ☐ (Clickable) Board history window
+    ☐ Accounts and savable games
+
+More Agents:
+    ☐ Hyper agressive
+    ☐ Bongcloud Kingmarch
+    ☐ CNN POC
