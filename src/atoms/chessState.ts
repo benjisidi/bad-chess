@@ -8,6 +8,7 @@ import {
     moveCounterAtom,
     selectedXAtom,
     selectedYAtom,
+    whiteToMoveAtom,
 } from './common';
 
 const useChessState = (): [
@@ -22,6 +23,7 @@ const useChessState = (): [
     const [moveCounter, setMoveCounter] = useRecoilState(moveCounterAtom);
     const [selectedX, setSelectedX] = useRecoilState(selectedXAtom);
     const [selectedY, setSelectedY] = useRecoilState(selectedYAtom);
+    const [whiteToMove, setWhiteToMove] = useRecoilState(whiteToMoveAtom);
 
     const setFns: {[key: string]: SetterOrUpdater<unknown>} = {
         boardArray: setBoardArray,
@@ -31,6 +33,7 @@ const useChessState = (): [
         moveCounter: setMoveCounter,
         selectedX: setSelectedX,
         selectedY: setSelectedY,
+        whiteToMove: setWhiteToMove,
     };
 
     const chessState: ChessState = {
@@ -41,6 +44,7 @@ const useChessState = (): [
         moveCounter,
         selectedX,
         selectedY,
+        whiteToMove,
     };
     const setChessState = (update: Partial<ChessState>): void => {
         Object.entries(update).forEach(([key, val]) => {

@@ -33,4 +33,5 @@ declare interface ChessState {
     moveCounter: number;
     selectedX: number | null;
     selectedY: number | null;
+    whiteToMove: boolean;
 }

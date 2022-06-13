@@ -23,8 +23,7 @@ const Chessboard = () => {
     const AVAILABLE_SQ_COLOR: [number, number, number, number] = [
         31, 127, 31, 255,
     ];
-    const FEN =
-        'rnbqkbnr/pp1ppppp/8/8/1rp1P2R/P4N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2';
+    const FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0';
 
     const renderPiece = (
         p5: p5Type,
@@ -164,33 +163,20 @@ const Chessboard = () => {
         const y = Math.floor(e.mouseY / BOARD_SIZE);
         // Check click is on chessboard
         if (x >= 0 && x < 8 && y >= 0 && y < 8) {
-            const whiteToMove = chessState.moveCounter % 2 == 0;
-            const selectedSq = chessState.boardArray[y][x];
+            const {whiteToMove, boardArray, selectedX, selectedY, enPassant} =
+                chessState;
+            const selectedSq = boardArray[y][x];
             const friendlyOrEmptySq =
                 (whiteToMove && isWhite(selectedSq)) ||
                 (!whiteToMove && isBlack(selectedSq));
             // If we don't have anything selected...
-            if (
-                chessState.selectedX === null ||
-                chessState.selectedY === null
-            ) {
+            if (selectedX === null || selectedY === null) {
                 // ...and we clicked a friendly piece, select it
                 if (selectedSq !== '_' && friendlyOrEmptySq) {
                     setChessState({selectedX: x, selectedY: y});
                     setAvailableSqs(
-                        getAvailableSqs(
-                            chessState.boardArray,
-                            x,
-                            y,
-                            chessState.enPassant,
-                        ).filter((sq) =>
-                            isValidMove(
-                                chessState.boardArray,
-                                x,
-                                y,
-                                sq[0],
-                                sq[1],
-                            ),
+                        getAvailableSqs(boardArray, x, y, enPassant).filter(
+                            (sq) => isValidMove(boardArray, x, y, sq[0], sq[1]),
                         ),
                     );
                 } else {
@@ -200,16 +186,28 @@ const Chessboard = () => {
                 }
             } else {
                 // If we have something selected already...
+                const alreadySelected = boardArray[selectedY][selectedX];
                 const availableSqIndex = availableSqs.map(
                     ([x, y]) => 8 * y + x,
                 );
                 const clickedSqIndex = 8 * y + x;
                 // ...and we selected somewhere it can move, move it there
                 if (availableSqIndex.includes(clickedSqIndex)) {
+                    // Reset the draw timer if we've made a capture or pawn move
+                    let newHalfMoveCounter = chessState.halfMoveCounter;
+                    if (
+                        boardArray[y][x] !== '_' ||
+                        alreadySelected.toLowerCase() === 'p'
+                    ) {
+                        newHalfMoveCounter = 0;
+                    } else {
+                        newHalfMoveCounter += 1;
+                    }
+
                     const [newBoard, enPassant] = movePiece(
-                        chessState.boardArray,
-                        chessState.selectedX,
-                        chessState.selectedY,
+                        boardArray,
+                        selectedX,
+                        selectedY,
                         x,
                         y,
                     );
@@ -217,7 +215,11 @@ const Chessboard = () => {
                         boardArray: newBoard,
                         selectedX: null,
                         selectedY: null,
-                        moveCounter: chessState.moveCounter + 1,
+                        moveCounter: isBlack(alreadySelected)
+                            ? chessState.moveCounter + 1
+                            : chessState.moveCounter,
+                        whiteToMove: isBlack(alreadySelected),
+                        halfMoveCounter: newHalfMoveCounter,
                         enPassant,
                     });
                     const [whiteInCheck, whiteKing] = isInCheck(
@@ -241,19 +243,8 @@ const Chessboard = () => {
                 } else if (selectedSq !== '_' && friendlyOrEmptySq) {
                     setChessState({selectedX: x, selectedY: y});
                     setAvailableSqs(
-                        getAvailableSqs(
-                            chessState.boardArray,
-                            x,
-                            y,
-                            chessState.enPassant,
-                        ).filter((sq) =>
-                            isValidMove(
-                                chessState.boardArray,
-                                x,
-                                y,
-                                sq[0],
-                                sq[1],
-                            ),
+                        getAvailableSqs(boardArray, x, y, enPassant).filter(
+                            (sq) => isValidMove(boardArray, x, y, sq[0], sq[1]),
                         ),
                     );
                 } else {

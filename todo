@@ -5,6 +5,11 @@ Fuctional Game:
       When a pawn takes en passant, destroy the taken pawn
     ✔ Check @done(22-06-09 17:53)
     ☐ Checkmate
+      If king is in check, and all pieces have no moves, checkmate
+    ☐ Stalemate
+      If no pieces have any valid moves, stalemate
+      Halfmove counter hits 50 [pawn move or capture]
+    ☐ Castling
     ☐ Queening
     ✔ Piece icons @done(22-06-09 19:27)
     ☐ Random agent as black

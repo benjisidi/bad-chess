@@ -25,6 +25,10 @@ const halfmoveCounterAtom = atom({
     key: 'halfmoveCounter',
     default: 0,
 });
+const whiteToMoveAtom = atom({
+    key: 'whiteToMove',
+    default: true,
+});
 const castlingAtom = atom({
     key: 'castling',
     default: {
@@ -43,4 +47,5 @@ export {
     castlingAtom,
     selectedXAtom,
     selectedYAtom,
+    whiteToMoveAtom,
 };

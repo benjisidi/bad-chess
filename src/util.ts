@@ -48,6 +48,7 @@ const parseFEN = (FEN: string): ChessState => {
         selectedY: null,
         halfMoveCounter: parseInt(halfMoves),
         moveCounter: parseInt(fullMoves),
+        whiteToMove: toMove === 'w',
     };
 };
 export {isBlack, isWhite, flat2board, board2flat, parseFEN};
