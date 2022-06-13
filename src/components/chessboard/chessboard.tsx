@@ -1,7 +1,10 @@
 import p5Type from 'p5';
 import React, {useState} from 'react';
 import Sketch from 'react-p5';
+import {useRecoilState} from 'recoil';
 
+import {checkHighlightAtom} from '@src/atoms/chessAtoms';
+import {queeningModalStateAtom} from '@src/atoms/modals';
 import {isBlack, isWhite, parseFEN} from '@src/util';
 
 import {useChessState} from '../../atoms/chessState';
@@ -16,11 +19,14 @@ import {
 const Chessboard = () => {
     const [chessState, setChessState] = useChessState();
     const [availableSqs, setAvailableSqs] = useState<number[][]>([]);
-    const [checkHighlight, setCheckHighlight] = useState<number[]>([]);
+    const [checkHighlight, setCheckHighlight] =
+        useRecoilState(checkHighlightAtom);
     const [pieceImages, _] = useState<Map<string, p5Type.Image>>(
         new Map<string, p5Type.Image>(),
     );
-
+    const [queeningModalState, setQueeningModalState] = useRecoilState(
+        queeningModalStateAtom,
+    );
     const BOARD_SIZE = 75;
     const CANVAS_SIZE = 600;
     const DARK_COLOR = [118, 69, 50];
@@ -32,7 +38,7 @@ const Chessboard = () => {
     // const FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0';
     // Castling debugging:
     const FEN =
-        'r3k2r/pppq1ppp/2npbn2/2b1p3/2B1P3/2NP1N2/PPPBQPPP/R3K2R w KQkq - 0 0';
+        'r3k2r/pPpq1ppp/2npbn2/2b1p3/2B1P3/2NP1N2/PPPBQPpP/R3K2R w KQkq - 0 0';
 
     const renderPiece = (
         p5: p5Type,
@@ -221,13 +227,11 @@ const Chessboard = () => {
                         newHalfMoveCounter += 1;
                     }
                     // Checkmate check
-                    const [newBoard, stateUpdate] = movePiece(
-                        boardArray,
-                        selectedX,
-                        selectedY,
-                        x,
-                        y,
-                    );
+                    const [newBoard, stateUpdate, queeningModalState] =
+                        movePiece(boardArray, selectedX, selectedY, x, y);
+                    if (queeningModalState !== null) {
+                        setQueeningModalState(queeningModalState);
+                    }
                     if (
                         hasNoMoves(
                             newBoard,

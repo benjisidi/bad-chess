@@ -9,8 +9,8 @@ Fuctional Game:
     ✔ Stalemate @done(22-06-13 17:29)
       If no pieces have any valid moves, stalemate
       Halfmove counter hits 50 [pawn move or capture]
-    ☐ Castling
-    ☐ Queening
+    ✔ Castling @done(22-06-13 22:13)
+    ✔ Queening @done(22-06-13 23:39)
     ✔ Piece icons @done(22-06-09 19:27)
     ☐ Random agent as black
     ☐ Random agent as white

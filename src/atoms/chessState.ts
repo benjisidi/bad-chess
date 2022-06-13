@@ -9,7 +9,7 @@ import {
     selectedXAtom,
     selectedYAtom,
     whiteToMoveAtom,
-} from './common';
+} from './chessAtoms';
 
 const useChessState = (): [
     ChessState,

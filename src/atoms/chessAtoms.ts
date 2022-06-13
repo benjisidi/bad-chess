@@ -66,6 +66,11 @@ const boardAsFEN = selector({
     },
 });
 
+const checkHighlightAtom = atom<number[]>({
+    key: 'checkHighlight',
+    default: [],
+});
+
 export {
     boardArrayAtom,
     enPassantAtom,
@@ -76,4 +81,5 @@ export {
     selectedYAtom,
     whiteToMoveAtom,
     boardAsFEN,
+    checkHighlightAtom,
 };

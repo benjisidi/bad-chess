@@ -44,3 +44,9 @@ declare interface ChessStateUpdateOverrides {
 }
 
 type ChessStateUpdate = Modify<Partial<ChessState>, ChessStateUpdateOverrides>;
+
+declare interface QueeningModalState {
+    open: boolean;
+    selector: (x: string) => boolean;
+    loc: [number, number];
+}

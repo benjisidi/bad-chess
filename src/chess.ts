@@ -25,7 +25,7 @@ const movePiece = (
     y: number,
     X: number,
     Y: number,
-): [string[][], ChessStateUpdate] => {
+): [string[][], ChessStateUpdate, QueeningModalState | null] => {
     const piece = boardArr[y][x];
     // This is insane but the official doc's suggestion of how to deep copy
     const newBoard = JSON.parse(JSON.stringify(boardArr));
@@ -34,6 +34,7 @@ const movePiece = (
     const originFlat = board2flat([x, y]);
     const rookLocations = [0, 7, 56, 63];
     let enPassant = null;
+    let queeningModalState: null | QueeningModalState = null;
     // Basic case: simply move piece to chosen square
     newBoard[Y][X] = piece;
     newBoard[y][x] = '_';
@@ -47,6 +48,16 @@ const movePiece = (
     ) {
         // We've just taken en passant, have to destroy the taken piece
         newBoard[Y - pawnDirection][X] = '_';
+    } else if (
+        piece.toLowerCase() === 'p' &&
+        ((isWhite(piece) && Y === 0) || (isBlack(piece) && Y === 7))
+    ) {
+        // Queeining
+        queeningModalState = {
+            open: true,
+            selector: isWhite(piece) ? isWhite : isBlack,
+            loc: [X, Y],
+        };
     } else if (
         piece.toLowerCase() === 'r' &&
         rookLocations.includes(originFlat)
@@ -92,7 +103,7 @@ const movePiece = (
         }
     }
     stateUpdate['enPassant'] = enPassant;
-    return [newBoard, stateUpdate];
+    return [newBoard, stateUpdate, queeningModalState];
 };
 
 const beamSearch = (

@@ -5,7 +5,7 @@
 import React from 'react';
 import {RecoilRoot} from 'recoil';
 
-import Chessboard from '../chessboard/chessboard';
+import ChessContainer from '../chessContainer/chessContainer';
 import ChessStateInspector from '../inspector/inspector';
 import {
     stylesContainer,
@@ -21,7 +21,7 @@ export const App = (): React.ReactElement => (
                 <ChessStateInspector />
                 <div className={stylesVertContainer}>
                     <div className={stylesHeader}>Bad Chess</div>
-                    <Chessboard />
+                    <ChessContainer />
                 </div>
             </div>
         </div>
