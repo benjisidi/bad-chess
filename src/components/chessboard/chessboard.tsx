@@ -5,7 +5,7 @@ import Sketch from 'react-p5';
 import {isBlack, isWhite, parseFEN} from '@src/util';
 
 import {useChessState} from '../../atoms/chessState';
-import {getAvailableSqs, isInCheck, movePiece} from '../../chess';
+import {getAvailableSqs, isInCheck, isValidMove, movePiece} from '../../chess';
 
 const Chessboard = () => {
     const [chessState, setChessState] = useChessState();
@@ -183,6 +183,14 @@ const Chessboard = () => {
                             x,
                             y,
                             chessState.enPassant,
+                        ).filter((sq) =>
+                            isValidMove(
+                                chessState.boardArray,
+                                x,
+                                y,
+                                sq[0],
+                                sq[1],
+                            ),
                         ),
                     );
                 } else {
@@ -238,6 +246,14 @@ const Chessboard = () => {
                             x,
                             y,
                             chessState.enPassant,
+                        ).filter((sq) =>
+                            isValidMove(
+                                chessState.boardArray,
+                                x,
+                                y,
+                                sq[0],
+                                sq[1],
+                            ),
                         ),
                     );
                 } else {

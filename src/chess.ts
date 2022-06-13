@@ -382,10 +382,15 @@ const isValidMove = (
     X: number,
     Y: number,
 ): boolean => {
-    const [resultingBoard, _] = movePiece(boardArr, x, y, X, Y);
-    const friendlySelector = boardArr[y][x];
-    // return isInCheck(resultingBoard, )
-    return false;
+    const [resultingBoard, enPassant] = movePiece(boardArr, x, y, X, Y);
+    const friendlySelector = isWhite(boardArr[y][x]) ? isWhite : isBlack;
+    const enemySelector = isWhite(boardArr[y][x]) ? isBlack : isWhite;
+    const [check, king] = isInCheck(
+        resultingBoard,
+        friendlySelector,
+        enemySelector,
+    );
+    return !check;
 };
 
-export {getAvailableSqs, movePiece, isInCheck};
+export {getAvailableSqs, movePiece, isInCheck, isValidMove};
