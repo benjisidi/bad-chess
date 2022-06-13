@@ -13,7 +13,7 @@ const CHECK_COLOR: [number, number, number] = [200, 0, 0];
 const BOARD_SIZE = 75;
 const CANVAS_SIZE = 600;
 const AVAILABLE_SQ: [number, number, number, number] = [31, 127, 31, 255];
-const FEN = 'rnbqkbnr/pp1ppppp/8/8/1rpPP2R/P4N2/PPP2PPP/RNBQKB1R b KQkq d3 1 2';
+const FEN = 'rnbqkbnr/pp1ppppp/8/8/1rp1P2R/P4N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2';
 
 const colMap: Map<string, number> = new Map();
 'abcdefgh'.split('').forEach((char, i) => colMap.set(char, i));
@@ -242,7 +242,7 @@ const Chessboard = () => {
                 );
                 const clickedSqIndex = 8 * y + x;
                 if (availableSqIndex.includes(clickedSqIndex)) {
-                    const newBoard = movePiece(
+                    const [newBoard, enPassant] = movePiece(
                         chessState.boardArray,
                         chessState.selectedX,
                         chessState.selectedY,
@@ -254,6 +254,7 @@ const Chessboard = () => {
                         selectedX: null,
                         selectedY: null,
                         moveCounter: chessState.moveCounter + 1,
+                        enPassant,
                     });
                     const [whiteInCheck, whiteKing] = isInCheck(
                         newBoard,
@@ -277,6 +278,7 @@ const Chessboard = () => {
                 }
             }
         }
+        console.log(chessState);
     };
     return (
         <Sketch

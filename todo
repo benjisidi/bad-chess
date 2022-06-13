@@ -1,5 +1,8 @@
 Fuctional Game:
-    ☐ En Passant update @started(22-06-09 19:32)
+    ✔ En Passant update @started(22-06-09 19:32) @done(22-06-13 15:00) @lasted(3d19h28m15s)
+      When a pawn moves 2 spaces forward, set the en passant flag
+      When any other piece moves, unset it
+      When a pawn takes en passant, destroy the taken pawn
     ✔ Check @done(22-06-09 17:53)
     ☐ Checkmate
     ☐ Queening

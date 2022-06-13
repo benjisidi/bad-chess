@@ -25,13 +25,27 @@ const movePiece = (
     y: number,
     X: number,
     Y: number,
-) => {
+): [string[][], null | number[]] => {
     const piece = boardArr[y][x];
     // This is insane but the official doc's suggestion of how to deep copy
     const newBoard = JSON.parse(JSON.stringify(boardArr));
+    const pawnDirection = isLowerCase(piece) ? 1 : -1;
+    let enPassant = null;
+    // Basic case: simply move piece to chosen square
     newBoard[Y][X] = piece;
     newBoard[y][x] = '_';
-    return newBoard;
+    if (piece.toLowerCase() === 'p' && (y - Y) ** 2 === 4) {
+        // Move is an initial pawn move, set en passant
+        enPassant = [x, y + pawnDirection];
+    } else if (
+        piece.toLowerCase() === 'p' &&
+        boardArr[Y][X] === '_' &&
+        x !== X
+    ) {
+        // We've just taken en passant, have to destroy the taken piece
+        newBoard[Y - pawnDirection][X] = '_';
+    }
+    return [newBoard, enPassant];
 };
 
 const beamSearch = (
