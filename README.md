@@ -16,6 +16,10 @@ Starts with the bongcloud, the quintessential bad chess opening, then the king l
 
 ARM's angry older brother. Plays random moves until it can take something, then does that at every available opportunity.
 
+## Pawnstorm
+
+Pawns only, baby!
+
 ## Terrible CNN
 
 A Convolutional Neural Network that has neither enough parameters or training time to have a hope of playing well.
