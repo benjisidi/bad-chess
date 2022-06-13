@@ -35,3 +35,12 @@ declare interface ChessState {
     selectedY: number | null;
     whiteToMove: boolean;
 }
+
+declare type Modify<T, R> = Omit<T, keyof R> & R;
+
+declare interface ChessStateUpdateOverrides {
+    castling: {k?: boolean; K?: boolean; q?: boolean; Q?: boolean};
+    enPassant: number[] | null;
+}
+
+type ChessStateUpdate = Modify<Partial<ChessState>, ChessStateUpdateOverrides>;

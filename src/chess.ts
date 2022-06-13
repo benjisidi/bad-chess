@@ -1,3 +1,7 @@
+import {flatten, set} from 'lodash';
+
+import {board2flat, flat2board, getAllPieces, isBlack, isWhite} from './util';
+
 /*
   find_moves(loc, type):
     in check?
@@ -15,21 +19,20 @@
       - beam search basic moves until blocked
 */
 
-import {flatten} from 'lodash';
-
-import {board2flat, flat2board, getAllPieces, isBlack, isWhite} from './util';
-
 const movePiece = (
     boardArr: string[][],
     x: number,
     y: number,
     X: number,
     Y: number,
-): [string[][], null | number[]] => {
+): [string[][], ChessStateUpdate] => {
     const piece = boardArr[y][x];
     // This is insane but the official doc's suggestion of how to deep copy
     const newBoard = JSON.parse(JSON.stringify(boardArr));
     const pawnDirection = isBlack(piece) ? 1 : -1;
+    const stateUpdate: ChessStateUpdate = {castling: {}, enPassant: null};
+    const originFlat = board2flat([x, y]);
+    const rookLocations = [0, 7, 56, 63];
     let enPassant = null;
     // Basic case: simply move piece to chosen square
     newBoard[Y][X] = piece;
@@ -44,8 +47,31 @@ const movePiece = (
     ) {
         // We've just taken en passant, have to destroy the taken piece
         newBoard[Y - pawnDirection][X] = '_';
+    } else if (
+        piece.toLowerCase() === 'r' &&
+        rookLocations.includes(originFlat)
+    ) {
+        // We've moved a rook from its initial position
+        const pieceToUpdate = {
+            0: 'q',
+            7: 'k',
+            56: 'Q',
+            63: 'K',
+        };
+        set(
+            stateUpdate,
+            [
+                'castling',
+                pieceToUpdate[originFlat as keyof typeof pieceToUpdate],
+            ],
+            false,
+        );
+    } else if (piece.toLowerCase() === 'k') {
+        set(stateUpdate, ['castling', isWhite(piece) ? 'K' : 'k'], false);
+        set(stateUpdate, ['castling', isWhite(piece) ? 'Q' : 'q'], false);
     }
-    return [newBoard, enPassant];
+    stateUpdate['enPassant'] = enPassant;
+    return [newBoard, stateUpdate];
 };
 
 const beamSearch = (
@@ -99,11 +125,87 @@ const beamSearch = (
     return out;
 };
 
+const getPieceSelectors = (boardArr: string[][], x: number, y: number) => {
+    const pieceIsWhite = isWhite(boardArr[y][x]);
+    const friendlySelector = pieceIsWhite ? isWhite : isBlack;
+    const enemySelector = pieceIsWhite ? isBlack : isWhite;
+    return [friendlySelector, enemySelector];
+};
+
+const getCastling = (
+    boardArr: string[][],
+    x: number,
+    y: number,
+    castling: {k: boolean; K: boolean; q: boolean; Q: boolean},
+): number[][] => {
+    const castlableSqs: number[][] = [];
+    const [friendlySelector, enemySelector] = getPieceSelectors(boardArr, x, y);
+    // If we're in check, we can't castle
+    const [inCheck, king] = getCheck(boardArr, friendlySelector, enemySelector);
+    if (inCheck) {
+        return castlableSqs;
+    }
+    // For the directions we have the right to castle, if we are going through check
+    // or into check, we also can't castle
+    const sqsToCheck = {
+        q: [
+            [3, 0],
+            [1, 0],
+            [2, 0],
+        ],
+        Q: [
+            [3, 7],
+            [1, 7],
+            [2, 7],
+        ],
+        k: [
+            [5, 0],
+            [6, 0],
+        ],
+        K: [
+            [5, 7],
+            [6, 7],
+        ],
+    };
+    Object.keys(castling)
+        .filter((i) => friendlySelector(i))
+        .forEach((key: 'k' | 'K' | 'q' | 'Q') => {
+            if (castling[key]) {
+                let canCastle = true;
+                sqsToCheck[key].every((sq) => {
+                    const [dummyBoard, dummyEnPassant] = movePiece(
+                        boardArr,
+                        x,
+                        y,
+                        sq[0],
+                        sq[1],
+                    );
+                    const [dummyInCheck, dummyKing] = getCheck(
+                        dummyBoard,
+                        friendlySelector,
+                        enemySelector,
+                    );
+                    if (dummyInCheck) {
+                        canCastle = false;
+                        return false;
+                    } else {
+                        return true;
+                    }
+                });
+                if (canCastle) {
+                    castlableSqs.push(sqsToCheck[key].at(-1) as number[]);
+                }
+            }
+        });
+    return castlableSqs;
+};
+
 const getAvailableSqs = (
     boardArr: string[][],
     x: number,
     y: number,
     enPassant: null | number[] = null,
+    castling: {k: boolean; K: boolean; q: boolean; Q: boolean},
 ): number[][] => {
     const piece = boardArr[y][x];
     const output = [];
@@ -211,6 +313,7 @@ const getAvailableSqs = (
             break;
         case 'K':
         case 'k':
+            // Regular moves
             output.push(
                 ...beamSearch(
                     x,
@@ -230,6 +333,8 @@ const getAvailableSqs = (
                     piece === 'k' ? isBlack : isWhite,
                 ),
             );
+            // Castling
+            output.push(...getCastling(boardArr, x, y, castling));
             break;
         case 'Q':
         case 'q':
@@ -275,7 +380,7 @@ const getAvailableSqs = (
     return output;
 };
 
-const isInCheck = (
+const getCheck = (
     boardArr: string[][],
     friendlySelector: (piece: string) => boolean,
     enemySelector: (piece: string) => boolean,
@@ -385,7 +490,7 @@ const isValidMove = (
     const [resultingBoard, enPassant] = movePiece(boardArr, x, y, X, Y);
     const friendlySelector = isWhite(boardArr[y][x]) ? isWhite : isBlack;
     const enemySelector = isWhite(boardArr[y][x]) ? isBlack : isWhite;
-    const [check, king] = isInCheck(
+    const [check, king] = getCheck(
         resultingBoard,
         friendlySelector,
         enemySelector,
@@ -397,11 +502,11 @@ const hasNoMoves = (
     boardArr: string[][],
     whiteToMove: boolean,
     enPassant: number[] | null,
+    castling: {k: boolean; K: boolean; q: boolean; Q: boolean},
 ): boolean => {
     const colorSelector = whiteToMove ? isWhite : isBlack;
     const allPieces = getAllPieces(boardArr, colorSelector);
     let noMoves = true;
-    // debugger;
     Object.entries(allPieces).every(
         ([piece, squares]: [string, number[][]]) => {
             squares.every((pieceSq) => {
@@ -411,6 +516,7 @@ const hasNoMoves = (
                         pieceSq[0],
                         pieceSq[1],
                         enPassant,
+                        castling,
                     ).filter((candidateSq) =>
                         isValidMove(
                             boardArr,
@@ -433,4 +539,10 @@ const hasNoMoves = (
     return noMoves;
 };
 
-export {getAvailableSqs, movePiece, isInCheck, isValidMove, hasNoMoves};
+export {
+    getAvailableSqs,
+    movePiece,
+    getCheck as isInCheck,
+    isValidMove,
+    hasNoMoves,
+};

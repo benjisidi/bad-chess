@@ -30,6 +30,9 @@ const Chessboard = () => {
         31, 127, 31, 255,
     ];
     const FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0';
+    // Castling debugging:
+    // const FEN =
+    //     'r3k2r/pppq1ppp/2npbn2/2b1p3/2B1P3/2NP1N2/PPPBQPPP/R3K2R w KQkq - 0 0';
 
     const renderPiece = (
         p5: p5Type,
@@ -169,8 +172,14 @@ const Chessboard = () => {
         const y = Math.floor(e.mouseY / BOARD_SIZE);
         // Check click is on chessboard
         if (x >= 0 && x < 8 && y >= 0 && y < 8) {
-            const {whiteToMove, boardArray, selectedX, selectedY, enPassant} =
-                chessState;
+            const {
+                whiteToMove,
+                boardArray,
+                selectedX,
+                selectedY,
+                enPassant,
+                castling,
+            } = chessState;
             const selectedSq = boardArray[y][x];
             const friendlyOrEmptySq =
                 (whiteToMove && isWhite(selectedSq)) ||
@@ -181,8 +190,14 @@ const Chessboard = () => {
                 if (selectedSq !== '_' && friendlyOrEmptySq) {
                     setChessState({selectedX: x, selectedY: y});
                     setAvailableSqs(
-                        getAvailableSqs(boardArray, x, y, enPassant).filter(
-                            (sq) => isValidMove(boardArray, x, y, sq[0], sq[1]),
+                        getAvailableSqs(
+                            boardArray,
+                            x,
+                            y,
+                            enPassant,
+                            castling,
+                        ).filter((sq) =>
+                            isValidMove(boardArray, x, y, sq[0], sq[1]),
                         ),
                     );
                 }
@@ -206,14 +221,21 @@ const Chessboard = () => {
                         newHalfMoveCounter += 1;
                     }
                     // Checkmate check
-                    const [newBoard, enPassant] = movePiece(
+                    const [newBoard, stateUpdate] = movePiece(
                         boardArray,
                         selectedX,
                         selectedY,
                         x,
                         y,
                     );
-                    if (hasNoMoves(newBoard, !whiteToMove, enPassant)) {
+                    if (
+                        hasNoMoves(
+                            newBoard,
+                            !whiteToMove,
+                            stateUpdate['enPassant'],
+                            castling,
+                        )
+                    ) {
                         if (
                             isInCheck(
                                 newBoard,
@@ -238,7 +260,7 @@ const Chessboard = () => {
                             : chessState.moveCounter,
                         whiteToMove: isBlack(alreadySelected),
                         halfMoveCounter: newHalfMoveCounter,
-                        enPassant,
+                        ...stateUpdate,
                     });
                     const [whiteInCheck, whiteKing] = isInCheck(
                         newBoard,
@@ -261,8 +283,14 @@ const Chessboard = () => {
                 } else if (selectedSq !== '_' && friendlyOrEmptySq) {
                     setChessState({selectedX: x, selectedY: y});
                     setAvailableSqs(
-                        getAvailableSqs(boardArray, x, y, enPassant).filter(
-                            (sq) => isValidMove(boardArray, x, y, sq[0], sq[1]),
+                        getAvailableSqs(
+                            boardArray,
+                            x,
+                            y,
+                            enPassant,
+                            castling,
+                        ).filter((sq) =>
+                            isValidMove(boardArray, x, y, sq[0], sq[1]),
                         ),
                     );
                 } else {

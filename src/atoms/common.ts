@@ -1,4 +1,4 @@
-import {atom} from 'recoil';
+import {atom, selector} from 'recoil';
 
 const boardArrayAtom = atom({
     key: 'boardArray',
@@ -38,6 +38,33 @@ const castlingAtom = atom({
         Q: true,
     },
 });
+const boardAsFEN = selector({
+    key: 'boardAsFEN',
+    get: ({get}) => {
+        const board: string[][] = get(boardArrayAtom);
+        let FEN = '';
+        board.forEach((row) => {
+            let gapCounter = 0;
+            row.forEach((sq) => {
+                if (sq === '_') {
+                    gapCounter += 1;
+                } else {
+                    if (gapCounter > 0) {
+                        FEN += `${gapCounter}`;
+                        gapCounter = 0;
+                    }
+                    FEN += sq;
+                }
+            });
+            if (gapCounter > 0) {
+                FEN += `${gapCounter}`;
+                gapCounter = 0;
+            }
+            FEN += '/';
+        });
+        return FEN;
+    },
+});
 
 export {
     boardArrayAtom,
@@ -48,4 +75,5 @@ export {
     selectedXAtom,
     selectedYAtom,
     whiteToMoveAtom,
+    boardAsFEN,
 };

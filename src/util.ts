@@ -1,7 +1,7 @@
 const isWhite = (x: string) => x !== '_' && x === x.toUpperCase();
 const isBlack = (x: string) => x !== '_' && x === x.toLowerCase();
 const flat2board = (coord: number) => [coord % 8, Math.floor(coord / 8)];
-const board2flat = (coord: [x: number, y: number]) => coord[0] * 8 + coord[1];
+const board2flat = (coord: [x: number, y: number]) => coord[0] + coord[1] * 8;
 
 const colMap: Map<string, number> = new Map();
 'abcdefgh'.split('').forEach((char, i) => colMap.set(char, i));

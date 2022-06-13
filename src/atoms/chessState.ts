@@ -13,7 +13,7 @@ import {
 
 const useChessState = (): [
     ChessState,
-    (update: Partial<ChessState>) => void,
+    (update: Partial<ChessStateUpdate>) => void,
 ] => {
     const [boardArray, setBoardArray] = useRecoilState(boardArrayAtom);
     const [castling, setCastling] = useRecoilState(castlingAtom);
@@ -27,7 +27,8 @@ const useChessState = (): [
 
     const setFns: {[key: string]: SetterOrUpdater<unknown>} = {
         boardArray: setBoardArray,
-        castling: setCastling,
+        castling: (update: {[key: string]: boolean}) =>
+            setCastling({...castling, ...update}),
         enPassant: setEnPassant,
         halfMoveCounter: setHalfMoveCounter,
         moveCounter: setMoveCounter,
@@ -46,7 +47,7 @@ const useChessState = (): [
         selectedY,
         whiteToMove,
     };
-    const setChessState = (update: Partial<ChessState>): void => {
+    const setChessState = (update: Partial<ChessStateUpdate>): void => {
         Object.entries(update).forEach(([key, val]) => {
             if (key in setFns) {
                 setFns[key](val);
