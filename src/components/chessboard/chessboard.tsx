@@ -2,10 +2,10 @@ import p5Type from 'p5';
 import React, {useState} from 'react';
 import Sketch from 'react-p5';
 
-import {isLowerCase, isUpperCase, parseFEN} from '@src/util';
+import {isBlack, isWhite, parseFEN} from '@src/util';
 
+import {useChessState} from '../../atoms/chessState';
 import {getAvailableSqs, isInCheck, movePiece} from '../../chess';
-import {useChessState} from '../atoms/chessState';
 
 const Chessboard = () => {
     const [chessState, setChessState] = useChessState();
@@ -69,7 +69,7 @@ const Chessboard = () => {
             'P',
         ];
         pieces.forEach((piece) => {
-            if (isLowerCase(piece)) {
+            if (isBlack(piece)) {
                 pieceImages.set(
                     piece,
                     p5.loadImage(`../../assets/png/black/${piece}.png`),
@@ -167,15 +167,13 @@ const Chessboard = () => {
             const whiteToMove = chessState.moveCounter % 2 == 0;
             const selectedSq = chessState.boardArray[y][x];
             const friendlyOrEmptySq =
-                (whiteToMove && isUpperCase(selectedSq)) ||
-                (!whiteToMove && isLowerCase(selectedSq));
+                (whiteToMove && isWhite(selectedSq)) ||
+                (!whiteToMove && isBlack(selectedSq));
             // If we don't have anything selected...
             if (
                 chessState.selectedX === null ||
                 chessState.selectedY === null
             ) {
-                const whiteToMove = chessState.moveCounter % 2 == 0;
-                const selectedSq = chessState.boardArray[y][x];
                 // ...and we clicked a friendly piece, select it
                 if (selectedSq !== '_' && friendlyOrEmptySq) {
                     setChessState({selectedX: x, selectedY: y});
@@ -189,7 +187,7 @@ const Chessboard = () => {
                     );
                 } else {
                     // ...and we clicked a non-friendly piece/empty square, deselect
-                    // anything we h ave selected
+                    // anything we have selected
                     setChessState({selectedX: null, selectedY: null});
                 }
             } else {
@@ -216,13 +214,13 @@ const Chessboard = () => {
                     });
                     const [whiteInCheck, whiteKing] = isInCheck(
                         newBoard,
-                        isLowerCase,
-                        isUpperCase,
+                        isBlack,
+                        isWhite,
                     );
                     const [blackInCheck, blackKing] = isInCheck(
                         newBoard,
-                        isUpperCase,
-                        isLowerCase,
+                        isWhite,
+                        isBlack,
                     );
                     if (whiteInCheck) {
                         setCheckHighlight(whiteKing as number[]);

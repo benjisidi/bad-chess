@@ -1,5 +1,5 @@
-const isUpperCase = (x: string) => x === x.toUpperCase();
-const isLowerCase = (x: string) => x === x.toLowerCase();
+const isWhite = (x: string) => x === x.toUpperCase();
+const isBlack = (x: string) => x === x.toLowerCase();
 const flat2board = (coord: number) => [coord % 8, Math.floor(coord / 8)];
 const board2flat = (coord: [x: number, y: number]) => coord[0] * 8 + coord[1];
 
@@ -50,4 +50,4 @@ const parseFEN = (FEN: string): ChessState => {
         moveCounter: parseInt(fullMoves),
     };
 };
-export {isLowerCase, isUpperCase, flat2board, board2flat, parseFEN};
+export {isBlack, isWhite, flat2board, board2flat, parseFEN};

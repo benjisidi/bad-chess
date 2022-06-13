@@ -17,7 +17,7 @@
 
 import {flatten} from 'lodash';
 
-import {board2flat, flat2board, isLowerCase, isUpperCase} from './util';
+import {board2flat, flat2board, isBlack, isWhite} from './util';
 
 const movePiece = (
     boardArr: string[][],
@@ -29,7 +29,7 @@ const movePiece = (
     const piece = boardArr[y][x];
     // This is insane but the official doc's suggestion of how to deep copy
     const newBoard = JSON.parse(JSON.stringify(boardArr));
-    const pawnDirection = isLowerCase(piece) ? 1 : -1;
+    const pawnDirection = isBlack(piece) ? 1 : -1;
     let enPassant = null;
     // Basic case: simply move piece to chosen square
     newBoard[Y][X] = piece;
@@ -113,7 +113,7 @@ const getAvailableSqs = (
             // Regular/1st movement
             l = y == 1 ? 2 : 1;
             output.push(
-                ...beamSearch(x, y, [[0, 1]], l, boardArr, isLowerCase, false),
+                ...beamSearch(x, y, [[0, 1]], l, boardArr, isBlack, false),
             );
             // Taking
             output.push(
@@ -126,7 +126,7 @@ const getAvailableSqs = (
                     ],
                     1,
                     boardArr,
-                    isLowerCase,
+                    isBlack,
                     true,
                     true,
                 ),
@@ -143,7 +143,7 @@ const getAvailableSqs = (
         case 'P':
             l = y == 6 ? 2 : 1;
             output.push(
-                ...beamSearch(x, y, [[0, -1]], l, boardArr, isUpperCase, false),
+                ...beamSearch(x, y, [[0, -1]], l, boardArr, isWhite, false),
             );
             output.push(
                 ...beamSearch(
@@ -155,7 +155,7 @@ const getAvailableSqs = (
                     ],
                     1,
                     boardArr,
-                    isUpperCase,
+                    isWhite,
                     true,
                     true,
                 ),
@@ -183,7 +183,7 @@ const getAvailableSqs = (
                     ],
                     8,
                     boardArr,
-                    piece === 'r' ? isLowerCase : isUpperCase,
+                    piece === 'r' ? isBlack : isWhite,
                 ),
             );
             break;
@@ -205,7 +205,7 @@ const getAvailableSqs = (
                     ],
                     1,
                     boardArr,
-                    piece === 'n' ? isLowerCase : isUpperCase,
+                    piece === 'n' ? isBlack : isWhite,
                 ),
             );
             break;
@@ -227,7 +227,7 @@ const getAvailableSqs = (
                     ],
                     1,
                     boardArr,
-                    piece === 'k' ? isLowerCase : isUpperCase,
+                    piece === 'k' ? isBlack : isWhite,
                 ),
             );
             break;
@@ -249,7 +249,7 @@ const getAvailableSqs = (
                     ],
                     8,
                     boardArr,
-                    piece === 'q' ? isLowerCase : isUpperCase,
+                    piece === 'q' ? isBlack : isWhite,
                 ),
             );
             break;
@@ -267,7 +267,7 @@ const getAvailableSqs = (
                     ],
                     8,
                     boardArr,
-                    piece === 'b' ? isLowerCase : isUpperCase,
+                    piece === 'b' ? isBlack : isWhite,
                 ),
             );
             break;
@@ -373,6 +373,19 @@ const isInCheck = (
     } else {
         return [false, null];
     }
+};
+
+const isValidMove = (
+    boardArr: string[][],
+    x: number,
+    y: number,
+    X: number,
+    Y: number,
+): boolean => {
+    const [resultingBoard, _] = movePiece(boardArr, x, y, X, Y);
+    const friendlySelector = boardArr[y][x];
+    // return isInCheck(resultingBoard, )
+    return false;
 };
 
 export {getAvailableSqs, movePiece, isInCheck};
