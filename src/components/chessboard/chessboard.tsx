@@ -1,7 +1,7 @@
 import p5Type from 'p5';
 import React, {useState} from 'react';
 import Sketch from 'react-p5';
-import {useRecoilState} from 'recoil';
+import {useRecoilState, useSetRecoilState} from 'recoil';
 
 import {checkHighlightAtom} from '@src/atoms/chessAtoms';
 import {queeningModalStateAtom} from '@src/atoms/modals';
@@ -24,9 +24,7 @@ const Chessboard = () => {
     const [pieceImages, _] = useState<Map<string, p5Type.Image>>(
         new Map<string, p5Type.Image>(),
     );
-    const [queeningModalState, setQueeningModalState] = useRecoilState(
-        queeningModalStateAtom,
-    );
+    const setQueeningModalState = useSetRecoilState(queeningModalStateAtom);
     const BOARD_SIZE = 75;
     const CANVAS_SIZE = 600;
     const DARK_COLOR = [118, 69, 50];
