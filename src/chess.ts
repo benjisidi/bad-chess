@@ -17,7 +17,7 @@
 
 import {flatten} from 'lodash';
 
-import {board2flat, flat2board, isBlack, isWhite} from './util';
+import {board2flat, flat2board, getAllPieces, isBlack, isWhite} from './util';
 
 const movePiece = (
     boardArr: string[][],
@@ -393,4 +393,44 @@ const isValidMove = (
     return !check;
 };
 
-export {getAvailableSqs, movePiece, isInCheck, isValidMove};
+const hasNoMoves = (
+    boardArr: string[][],
+    whiteToMove: boolean,
+    enPassant: number[] | null,
+): boolean => {
+    const colorSelector = whiteToMove ? isWhite : isBlack;
+    const allPieces = getAllPieces(boardArr, colorSelector);
+    let noMoves = true;
+    // debugger;
+    Object.entries(allPieces).every(
+        ([piece, squares]: [string, number[][]]) => {
+            squares.every((pieceSq) => {
+                if (
+                    getAvailableSqs(
+                        boardArr,
+                        pieceSq[0],
+                        pieceSq[1],
+                        enPassant,
+                    ).filter((candidateSq) =>
+                        isValidMove(
+                            boardArr,
+                            pieceSq[0],
+                            pieceSq[1],
+                            candidateSq[0],
+                            candidateSq[1],
+                        ),
+                    ).length > 0
+                ) {
+                    noMoves = false;
+                }
+                return noMoves;
+            });
+            // Every will break as soon as checkmate is false, otherwise we
+            // will check every piece before returning true
+            return noMoves;
+        },
+    );
+    return noMoves;
+};
+
+export {getAvailableSqs, movePiece, isInCheck, isValidMove, hasNoMoves};

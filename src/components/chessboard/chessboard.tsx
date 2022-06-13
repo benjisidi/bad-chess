@@ -5,7 +5,13 @@ import Sketch from 'react-p5';
 import {isBlack, isWhite, parseFEN} from '@src/util';
 
 import {useChessState} from '../../atoms/chessState';
-import {getAvailableSqs, isInCheck, isValidMove, movePiece} from '../../chess';
+import {
+    getAvailableSqs,
+    hasNoMoves,
+    isInCheck,
+    isValidMove,
+    movePiece,
+} from '../../chess';
 
 const Chessboard = () => {
     const [chessState, setChessState] = useChessState();
@@ -179,10 +185,6 @@ const Chessboard = () => {
                             (sq) => isValidMove(boardArray, x, y, sq[0], sq[1]),
                         ),
                     );
-                } else {
-                    // ...and we clicked a non-friendly piece/empty square, deselect
-                    // anything we have selected
-                    setChessState({selectedX: null, selectedY: null});
                 }
             } else {
                 // If we have something selected already...
@@ -203,7 +205,7 @@ const Chessboard = () => {
                     } else {
                         newHalfMoveCounter += 1;
                     }
-
+                    // Checkmate check
                     const [newBoard, enPassant] = movePiece(
                         boardArray,
                         selectedX,
@@ -211,6 +213,22 @@ const Chessboard = () => {
                         x,
                         y,
                     );
+                    if (hasNoMoves(newBoard, !whiteToMove, enPassant)) {
+                        if (
+                            isInCheck(
+                                newBoard,
+                                whiteToMove ? isWhite : isBlack,
+                                whiteToMove ? isBlack : isWhite,
+                            )
+                        ) {
+                            alert('CHECKMATE');
+                        } else {
+                            alert('STALEMATE');
+                        }
+                    }
+                    if (newHalfMoveCounter >= 50) {
+                        alert('STALEMATE');
+                    }
                     setChessState({
                         boardArray: newBoard,
                         selectedX: null,

@@ -1,5 +1,5 @@
-const isWhite = (x: string) => x === x.toUpperCase();
-const isBlack = (x: string) => x === x.toLowerCase();
+const isWhite = (x: string) => x !== '_' && x === x.toUpperCase();
+const isBlack = (x: string) => x !== '_' && x === x.toLowerCase();
 const flat2board = (coord: number) => [coord % 8, Math.floor(coord / 8)];
 const board2flat = (coord: [x: number, y: number]) => coord[0] * 8 + coord[1];
 
@@ -51,4 +51,23 @@ const parseFEN = (FEN: string): ChessState => {
         whiteToMove: toMove === 'w',
     };
 };
-export {isBlack, isWhite, flat2board, board2flat, parseFEN};
+
+const getAllPieces = (
+    boardArr: string[][],
+    colorSelector: (piece: string) => boolean,
+): {[piece: string]: number[][]} => {
+    const output: {[piece: string]: number[][]} = {};
+    boardArr.forEach((row, i) => {
+        row.forEach((square, j) => {
+            if (colorSelector(square)) {
+                if (square in output) {
+                    output[square].push([j, i]);
+                } else {
+                    output[square] = [[j, i]];
+                }
+            }
+        });
+    });
+    return output;
+};
+export {isBlack, isWhite, flat2board, board2flat, parseFEN, getAllPieces};

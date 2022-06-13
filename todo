@@ -4,9 +4,9 @@ Fuctional Game:
       When any other piece moves, unset it
       When a pawn takes en passant, destroy the taken pawn
     ✔ Check @done(22-06-09 17:53)
-    ☐ Checkmate
+    ✔ Checkmate @done(22-06-13 17:21)
       If king is in check, and all pieces have no moves, checkmate
-    ☐ Stalemate
+    ✔ Stalemate @done(22-06-13 17:29)
       If no pieces have any valid moves, stalemate
       Halfmove counter hits 50 [pawn move or capture]
     ☐ Castling
@@ -28,5 +28,6 @@ More Agents:
     ☐ CNN POC
 
 Misc:
-    ☐ Chess Icon Attribution <a href="https://www.vecteezy.com/free-vector/chess-icons">Chess Icons Vectors by Vecteezy</a>
+    ✔ Chess Icon Attribution @done(22-06-13 16:42)
+      Used wikimedia commons ones instead
     ☐ Responsive canvas width
