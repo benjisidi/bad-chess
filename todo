@@ -1,5 +1,5 @@
 Fuctional Game:
-    ☐ En Passant update
+    ☐ En Passant update @started(22-06-09 19:32)
     ✔ Check @done(22-06-09 17:53)
     ☐ Checkmate
     ☐ Queening
@@ -21,3 +21,4 @@ More Agents:
 
 Misc:
     ☐ Chess Icon Attribution <a href="https://www.vecteezy.com/free-vector/chess-icons">Chess Icons Vectors by Vecteezy</a>
+    ☐ Responsive canvas width
