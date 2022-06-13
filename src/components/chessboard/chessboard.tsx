@@ -29,10 +29,10 @@ const Chessboard = () => {
     const AVAILABLE_SQ_COLOR: [number, number, number, number] = [
         31, 127, 31, 255,
     ];
-    const FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0';
+    // const FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0';
     // Castling debugging:
-    // const FEN =
-    //     'r3k2r/pppq1ppp/2npbn2/2b1p3/2B1P3/2NP1N2/PPPBQPPP/R3K2R w KQkq - 0 0';
+    const FEN =
+        'r3k2r/pppq1ppp/2npbn2/2b1p3/2B1P3/2NP1N2/PPPBQPPP/R3K2R w KQkq - 0 0';
 
     const renderPiece = (
         p5: p5Type,

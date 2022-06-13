@@ -66,9 +66,30 @@ const movePiece = (
             ],
             false,
         );
+        // If we've moved the king, set castling rights to false and castle if appropriate
     } else if (piece.toLowerCase() === 'k') {
         set(stateUpdate, ['castling', isWhite(piece) ? 'K' : 'k'], false);
         set(stateUpdate, ['castling', isWhite(piece) ? 'Q' : 'q'], false);
+        if ((x - X) ** 2 === 4) {
+            switch (board2flat([X, Y])) {
+                case 2:
+                    newBoard[0][0] = '_';
+                    newBoard[0][3] = 'r';
+                    break;
+                case 6:
+                    newBoard[0][7] = '_';
+                    newBoard[0][5] = 'r';
+                    break;
+                case 58:
+                    newBoard[7][0] = '_';
+                    newBoard[7][3] = 'R';
+                    break;
+                case 62:
+                    newBoard[7][7] = '_';
+                    newBoard[7][5] = 'R';
+                    break;
+            }
+        }
     }
     stateUpdate['enPassant'] = enPassant;
     return [newBoard, stateUpdate];
@@ -167,12 +188,34 @@ const getCastling = (
             [6, 7],
         ],
     };
+    const rookPositions = {
+        q: [0, 0],
+        Q: [0, 7],
+        k: [7, 0],
+        K: [7, 7],
+    };
+    // ToDo Crit: Check rook exists/hasn't been taken
     Object.keys(castling)
         .filter((i) => friendlySelector(i))
         .forEach((key: 'k' | 'K' | 'q' | 'Q') => {
             if (castling[key]) {
                 let canCastle = true;
                 sqsToCheck[key].every((sq) => {
+                    // Square occupied
+                    if (boardArr[sq[1]][sq[0]] !== '_') {
+                        canCastle = false;
+                        return false;
+                    }
+                    // Rook is in position, hasn't been taken
+                    // [If it has moved, castling rights already false]
+                    const rookPosition = rookPositions[key];
+                    if (
+                        boardArr[rookPosition[1]][rookPosition[0]] !==
+                        (friendlySelector('r') ? 'r' : 'R')
+                    ) {
+                        canCastle = false;
+                        return false;
+                    }
                     const [dummyBoard, dummyEnPassant] = movePiece(
                         boardArr,
                         x,
