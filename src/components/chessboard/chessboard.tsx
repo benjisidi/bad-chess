@@ -2,96 +2,10 @@ import p5Type from 'p5';
 import React, {useState} from 'react';
 import Sketch from 'react-p5';
 
-import {isLowerCase, isUpperCase} from '@src/util';
+import {isLowerCase, isUpperCase, parseFEN} from '@src/util';
 
 import {getAvailableSqs, isInCheck, movePiece} from '../../chess';
 import {useChessState} from '../atoms/chessState';
-
-const DARK_COLOR = [118, 69, 50];
-const LIGHT_COLOR = [226, 213, 188];
-const CHECK_COLOR: [number, number, number] = [200, 0, 0];
-const BOARD_SIZE = 75;
-const CANVAS_SIZE = 600;
-const AVAILABLE_SQ: [number, number, number, number] = [31, 127, 31, 255];
-const FEN = 'rnbqkbnr/pp1ppppp/8/8/1rp1P2R/P4N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2';
-
-const colMap: Map<string, number> = new Map();
-'abcdefgh'.split('').forEach((char, i) => colMap.set(char, i));
-const FEN2Arr = (board: string): string[][] => {
-    const out: string[][] = [];
-    board.split('/').forEach((row) => {
-        const rowArr: string[] = [];
-        row.split('').forEach((piece) => {
-            const spacing = parseInt(piece);
-            if (isNaN(spacing)) {
-                rowArr.push(piece);
-            } else {
-                rowArr.push(...Array(spacing).fill('_'));
-            }
-        });
-        out.push(rowArr);
-    });
-    return out;
-};
-const renderPiece = (
-    p5: p5Type,
-    piece: string,
-    row: number,
-    col: number,
-    pieceImages: Map<string, p5Type.Image>,
-) => {
-    // const color: [number, number, number] =
-    //     piece == piece.toUpperCase() ? [0, 102, 153] : [50, 50, 50];
-    // p5.fill(...color);
-    // p5.rectMode(p5.CORNERS);
-    // // p5.textAlign(p5.CENTER, p5.CENTER);
-    // p5.textSize(64);
-    // p5.text(
-    //     piece,
-    //     col * BOARD_SIZE,
-    //     row * BOARD_SIZE,
-    //     col * BOARD_SIZE + BOARD_SIZE,
-    //     row * BOARD_SIZE + BOARD_SIZE,
-    // );
-    // p5.rectMode(p5.CORNER);
-    if (pieceImages.has(piece)) {
-        p5.image(
-            pieceImages.get(piece) as p5Type.Image,
-            col * BOARD_SIZE,
-            row * BOARD_SIZE,
-            BOARD_SIZE,
-            BOARD_SIZE,
-        );
-    }
-};
-
-const parseFEN = (FEN: string): ChessState => {
-    const [pieces, toMove, castling, enPassant, halfMoves, fullMoves] =
-        FEN.split(' ');
-    const enPassantParsed =
-        enPassant === '-'
-            ? null
-            : [
-                  colMap.get(enPassant[0]) as number,
-                  7 - (parseInt(enPassant[1]) - 1),
-              ];
-    const boardArr = FEN2Arr(pieces);
-    const castlingParsed = {
-        k: castling.includes('k'),
-        K: castling.includes('K'),
-        q: castling.includes('q'),
-        Q: castling.includes('Q'),
-    };
-    return {
-        boardArray: boardArr,
-        castling: castlingParsed,
-        enPassant: enPassantParsed,
-        selectedX: null,
-        selectedY: null,
-        halfMoveCounter: parseInt(halfMoves),
-        moveCounter: parseInt(fullMoves),
-    };
-};
 
 const Chessboard = () => {
     const [chessState, setChessState] = useChessState();
@@ -100,10 +14,45 @@ const Chessboard = () => {
     const [pieceImages, _] = useState<Map<string, p5Type.Image>>(
         new Map<string, p5Type.Image>(),
     );
+
+    const BOARD_SIZE = 75;
+    const CANVAS_SIZE = 600;
+    const DARK_COLOR = [118, 69, 50];
+    const LIGHT_COLOR = [226, 213, 188];
+    const CHECK_COLOR: [number, number, number] = [200, 0, 0];
+    const AVAILABLE_SQ_COLOR: [number, number, number, number] = [
+        31, 127, 31, 255,
+    ];
+    const FEN =
+        'rnbqkbnr/pp1ppppp/8/8/1rp1P2R/P4N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2';
+
+    const renderPiece = (
+        p5: p5Type,
+        piece: string,
+        row: number,
+        col: number,
+        pieceImages: Map<string, p5Type.Image>,
+    ) => {
+        if (pieceImages.has(piece)) {
+            p5.image(
+                pieceImages.get(piece) as p5Type.Image,
+                col * BOARD_SIZE,
+                row * BOARD_SIZE,
+                BOARD_SIZE,
+                BOARD_SIZE,
+            );
+        }
+    };
+
     const setup = (p5: p5Type, parentCanvasRef: Element) => {
         p5.createCanvas(CANVAS_SIZE, CANVAS_SIZE).parent(parentCanvasRef);
+        parentCanvasRef.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            setChessState({selectedX: null, selectedY: null});
+        });
         setChessState(parseFEN(FEN));
     };
+
     const preload = (p5: p5Type) => {
         const pieces = [
             'k',
@@ -158,7 +107,7 @@ const Chessboard = () => {
                 // p5.noFill();
                 if (chessState.boardArray[y][x] !== '_') {
                     p5.strokeWeight(4);
-                    p5.stroke(...AVAILABLE_SQ);
+                    p5.stroke(...AVAILABLE_SQ_COLOR);
                     p5.noFill();
                     p5.rect(
                         x * BOARD_SIZE,
@@ -169,7 +118,7 @@ const Chessboard = () => {
                 } else {
                     p5.strokeWeight(2);
                     p5.stroke(0);
-                    p5.fill(...AVAILABLE_SQ);
+                    p5.fill(...AVAILABLE_SQ_COLOR);
                     p5.circle(
                         x * BOARD_SIZE + BOARD_SIZE / 2,
                         y * BOARD_SIZE + BOARD_SIZE / 2,
@@ -209,21 +158,26 @@ const Chessboard = () => {
             );
         }
     };
+
     const mouseClicked = (e: p5Type) => {
         const x = Math.floor(e.mouseX / BOARD_SIZE);
         const y = Math.floor(e.mouseY / BOARD_SIZE);
+        // Check click is on chessboard
         if (x >= 0 && x < 8 && y >= 0 && y < 8) {
+            const whiteToMove = chessState.moveCounter % 2 == 0;
+            const selectedSq = chessState.boardArray[y][x];
+            const friendlyOrEmptySq =
+                (whiteToMove && isUpperCase(selectedSq)) ||
+                (!whiteToMove && isLowerCase(selectedSq));
+            // If we don't have anything selected...
             if (
                 chessState.selectedX === null ||
                 chessState.selectedY === null
             ) {
                 const whiteToMove = chessState.moveCounter % 2 == 0;
                 const selectedSq = chessState.boardArray[y][x];
-                if (
-                    selectedSq !== '_' &&
-                    ((whiteToMove && isUpperCase(selectedSq)) ||
-                        (!whiteToMove && isLowerCase(selectedSq)))
-                ) {
+                // ...and we clicked a friendly piece, select it
+                if (selectedSq !== '_' && friendlyOrEmptySq) {
                     setChessState({selectedX: x, selectedY: y});
                     setAvailableSqs(
                         getAvailableSqs(
@@ -234,13 +188,17 @@ const Chessboard = () => {
                         ),
                     );
                 } else {
+                    // ...and we clicked a non-friendly piece/empty square, deselect
+                    // anything we h ave selected
                     setChessState({selectedX: null, selectedY: null});
                 }
             } else {
+                // If we have something selected already...
                 const availableSqIndex = availableSqs.map(
                     ([x, y]) => 8 * y + x,
                 );
                 const clickedSqIndex = 8 * y + x;
+                // ...and we selected somewhere it can move, move it there
                 if (availableSqIndex.includes(clickedSqIndex)) {
                     const [newBoard, enPassant] = movePiece(
                         chessState.boardArray,
@@ -273,12 +231,22 @@ const Chessboard = () => {
                     } else {
                         setCheckHighlight([]);
                     }
+                    // ...And we selected another friendly piece, select that instead
+                } else if (selectedSq !== '_' && friendlyOrEmptySq) {
+                    setChessState({selectedX: x, selectedY: y});
+                    setAvailableSqs(
+                        getAvailableSqs(
+                            chessState.boardArray,
+                            x,
+                            y,
+                            chessState.enPassant,
+                        ),
+                    );
                 } else {
                     setChessState({selectedX: null, selectedY: null});
                 }
             }
         }
-        console.log(chessState);
     };
     return (
         <Sketch

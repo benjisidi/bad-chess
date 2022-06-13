@@ -3,6 +3,8 @@
 declare namespace AppModuleLessNamespace {
     export interface IAppModuleLess {
         stylesContainer: string;
+        stylesHorizContainer: string;
+        stylesVertContainer: string;
     }
 }
 

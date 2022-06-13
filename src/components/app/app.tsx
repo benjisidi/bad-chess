@@ -1,32 +1,29 @@
 /**
- * Created by: Andrey Polyakov (andrey@polyakov.im)
+ * Boilerplate by: Andrey Polyakov (andrey@polyakov.im)
  */
 
-import React, {lazy} from 'react';
+import React from 'react';
 import {RecoilRoot} from 'recoil';
 
-import {stylesContainer} from './app.module.less';
+import Chessboard from '../chessboard/chessboard';
+import ChessStateInspector from '../inspector/inspector';
+import {
+    stylesContainer,
+    stylesHorizContainer,
+    stylesVertContainer,
+} from './app.module.less';
 import {stylesHeader} from './app.module.scss';
-import Chessboard from './p5-canvas';
 
-// const LazyStrawberryIcon = lazy(() => import('./strawberry'));
 export const App = (): React.ReactElement => (
     <RecoilRoot>
         <div className={stylesContainer}>
-            <div className={stylesHeader}>Bad Chess</div>
-            {/* <Suspense fallback={'loading...'}>
-            <LazyStrawberryIcon className={stylesImage} />
-        </Suspense>
-        <div>
-            <a
-                className={cn(stylesLink)}
-                href="https://github.com/glook/webpack-typescript-react"
-                target="_blank"
-            >
-                @glook/webpack-typescript-react ({packageJson.version})
-            </a>
-        </div> */}
-            <Chessboard />
+            <div className={stylesHorizContainer}>
+                <ChessStateInspector />
+                <div className={stylesVertContainer}>
+                    <div className={stylesHeader}>Bad Chess</div>
+                    <Chessboard />
+                </div>
+            </div>
         </div>
     </RecoilRoot>
 );
