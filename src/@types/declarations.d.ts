@@ -25,9 +25,15 @@ declare const IS_PROD: boolean;
 declare const IS_DEV: boolean;
 declare const IS_DEV_SERVER: boolean;
 
+declare interface Castling {
+    k: boolean;
+    K: boolean;
+    q: boolean;
+    Q: boolean;
+}
 declare interface ChessState {
     boardArray: string[][];
-    castling: {k: boolean; K: boolean; q: boolean; Q: boolean};
+    castling: Castling;
     enPassant: number[] | null;
     halfMoveCounter: number;
     moveCounter: number;

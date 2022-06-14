@@ -16,7 +16,9 @@ import {
     movePiece,
 } from '../../chess';
 
-const Chessboard = () => {
+const Chessboard = (props: {
+    handleStateChange: (stateUpdate: Partial<ChessState>) => void;
+}) => {
     const [chessState, setChessState] = useChessState();
     const [availableSqs, setAvailableSqs] = useState<number[][]>([]);
     const [checkHighlight, setCheckHighlight] =
@@ -24,6 +26,7 @@ const Chessboard = () => {
     const [pieceImages, _] = useState<Map<string, p5Type.Image>>(
         new Map<string, p5Type.Image>(),
     );
+    const {handleStateChange} = props;
     const setQueeningModalState = useSetRecoilState(queeningModalStateAtom);
     const BOARD_SIZE = 75;
     const CANVAS_SIZE = 600;
@@ -224,31 +227,10 @@ const Chessboard = () => {
                     } else {
                         newHalfMoveCounter += 1;
                     }
-                    // Checkmate check
                     const [newBoard, stateUpdate, queeningModalState] =
                         movePiece(boardArray, selectedX, selectedY, x, y);
                     if (queeningModalState !== null) {
                         setQueeningModalState(queeningModalState);
-                    }
-                    if (
-                        hasNoMoves(
-                            newBoard,
-                            !whiteToMove,
-                            stateUpdate['enPassant'],
-                            castling,
-                        )
-                    ) {
-                        if (
-                            isInCheck(
-                                newBoard,
-                                whiteToMove ? isWhite : isBlack,
-                                whiteToMove ? isBlack : isWhite,
-                            )
-                        ) {
-                            alert('CHECKMATE');
-                        } else {
-                            alert('STALEMATE');
-                        }
                     }
                     if (newHalfMoveCounter >= 50) {
                         alert('STALEMATE');
@@ -264,23 +246,13 @@ const Chessboard = () => {
                         halfMoveCounter: newHalfMoveCounter,
                         ...stateUpdate,
                     });
-                    const [whiteInCheck, whiteKing] = isInCheck(
-                        newBoard,
-                        isBlack,
-                        isWhite,
-                    );
-                    const [blackInCheck, blackKing] = isInCheck(
-                        newBoard,
-                        isWhite,
-                        isBlack,
-                    );
-                    if (whiteInCheck) {
-                        setCheckHighlight(whiteKing as number[]);
-                    } else if (blackInCheck) {
-                        setCheckHighlight(blackKing as number[]);
-                    } else {
-                        setCheckHighlight([]);
-                    }
+                    handleStateChange({
+                        boardArray: newBoard,
+                        castling,
+                        enPassant,
+                        whiteToMove,
+                    });
+
                     // ...And we selected another friendly piece, select that instead
                 } else if (selectedSq !== '_' && friendlyOrEmptySq) {
                     setChessState({selectedX: x, selectedY: y});
